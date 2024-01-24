@@ -1,14 +1,43 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Pet from "./Pet";
+import useBreedList from "./useBreedList";
 const ANIMALS = ["bird", "cat", "dog", "rabbit", "reptile"];
-const BREEDS = ["Maine Coon"];
 
 const SearchParams = () => {
-  const [location, setLocation] = useState("Seattle, WA");
+  const [location, setLocation] = useState("");
   const [animal, setAnimal] = useState("");
   const [breed, setBreed] = useState("");
+  //  const breeds = [];
+  const [pets, setPets] = useState([]);
+
+  useEffect(() => {
+    requestPets();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const [breeds] = useBreedList(animal);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    requestPets();
+  };
+
+  async function requestPets() {
+    const res = await fetch(
+      `https://pets-v2.dev-apis.com/pets?animal=${animal}&location=${location}&breed=${breed}`
+    );
+    const json = await res.json();
+    setPets(json.pets);
+
+    // fetch(
+    //   `https://pets-v2.dev-apis.com/pets?animal=${animal}&location=${location}&breed=${breed}`
+    // )
+    //   .then((res) => res.json())
+    //   .then((json) => setPets(json.pets));
+  }
+
   return (
     <div className="search-params">
-      <form>
+      <form onSubmit={(e) => handleSubmit(e)}>
         <label htmlFor="location">
           Location
           <input
@@ -40,12 +69,12 @@ const SearchParams = () => {
           Breed
           <select
             id="breed"
-            disabled={BREEDS.length === 0}
+            disabled={breeds.length === 0}
             onChange={(e) => setBreed(e.target.value)}
             value={breed}
           >
             <option />
-            {BREEDS.map((breed) => (
+            {breeds.map((breed) => (
               <option key={breed} value={breed}>
                 {breed}
               </option>
@@ -54,6 +83,14 @@ const SearchParams = () => {
         </label>
         <button>Submit</button>
       </form>
+      {pets.map((pet) => (
+        <Pet
+          key={pet.id}
+          name={pet.name}
+          animal={pet.animal}
+          breed={pet.breed}
+        />
+      ))}
     </div>
   );
 };
