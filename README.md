@@ -1,1 +1,1 @@
-# Adpot Me App
+# Adopt Me App
